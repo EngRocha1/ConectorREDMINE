@@ -1,0 +1,19 @@
+services:
+  conector-redmine:
+    build: .
+    image: conector-redmine:1.1.0
+    container_name: conector-redmine
+    ports:
+      - "${PORT:-3100}:3100"
+    environment:
+      REDMINE_URL: ${REDMINE_URL}
+      REDMINE_API_KEY: ${REDMINE_API_KEY:-}
+      REDMINE_READ_ONLY: ${REDMINE_READ_ONLY:-false}
+      PORT: "3100"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3100/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

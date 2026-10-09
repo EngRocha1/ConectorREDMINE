@@ -1,24 +1,47 @@
 {
   "name": "conector-redmine",
-  "version": "1.0.0",
-  "description": "MCP server público para Redmine — Grok custom connector, Claude, Cursor",
+  "version": "1.1.0",
+  "description": "MCP server oficial para Redmine — Grok custom connector (URL), Claude, Cursor. Issues, versões/sprints, time entries, wiki.",
   "type": "module",
   "bin": {
-    "conector-redmine": "./src/index.js"
+    "conector-redmine": "./src/index.js",
+    "conector-redmine-http": "./src/http-server.js"
   },
+  "main": "./src/index.js",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE",
+    ".env.example"
+  ],
   "scripts": {
     "start": "node src/index.js",
+    "stdio": "node src/index.js",
     "http": "node src/http-server.js",
-    "stdio": "node src/index.js"
+    "test": "node --test test/*.test.js",
+    "prepublishOnly": "npm test"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EngRocha1/ConectorREDMINE.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EngRocha1/ConectorREDMINE/issues"
+  },
+  "homepage": "https://github.com/EngRocha1/ConectorREDMINE#readme",
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "redmine",
     "grok",
-    "claude",
     "xai",
-    "connector"
+    "claude",
+    "cursor",
+    "connector",
+    "agile",
+    "sprint"
   ],
+  "author": "EngRocha1",
   "license": "MIT",
   "engines": {
     "node": ">=18"
