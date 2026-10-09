@@ -1,15 +1,10 @@
 #!/usr/bin/env node
 /**
- * ConectorREDMINE — MCP via Streamable HTTP (Grok custom connector, remote MCP).
+ * ConectorREDMINE — MCP Streamable HTTP (Grok custom connector, remote MCP, Docker)
  *
- * Suba localmente e exponha com ngrok/cloudflared:
  *   npm run http
  *   ngrok http 3100
- *
- * Em grok.com/connectors → New Connector → Custom → cole a URL pública + /mcp
- *
- * Auth opcional: header Authorization: Bearer <REDMINE_API_KEY>
- * ou use REDMINE_API_KEY fixo no ambiente do servidor.
+ *   → grok.com/connectors → Custom → https://….ngrok-free.app/mcp
  */
 import express from "express";
 import { randomUUID } from "crypto";
@@ -21,10 +16,11 @@ import { registerTools } from "./tools.js";
 const PORT = Number(process.env.PORT || 3100);
 const baseUrl = process.env.REDMINE_URL;
 const defaultKey = process.env.REDMINE_API_KEY;
-const readOnly = String(process.env.REDMINE_READ_ONLY || "").toLowerCase() === "true";
+const readOnly =
+  String(process.env.REDMINE_READ_ONLY || "").toLowerCase() === "true";
 
 if (!baseUrl) {
-  console.error("Defina REDMINE_URL");
+  console.error("[conector-redmine] Defina REDMINE_URL");
   process.exit(1);
 }
 
@@ -35,9 +31,18 @@ app.get("/health", (_req, res) => {
   res.json({
     ok: true,
     name: "conector-redmine",
+    version: "1.1.0",
     redmine: baseUrl,
     mode: defaultKey ? "env-key" : "per-request-bearer",
+    read_only: readOnly,
   });
+});
+
+app.get("/", (_req, res) => {
+  res.type("text").send(
+    "ConectorREDMINE MCP — use POST/GET /mcp | health em /health\n" +
+      "https://github.com/EngRocha1/ConectorREDMINE\n"
+  );
 });
 
 function resolveKey(req) {
@@ -54,7 +59,8 @@ app.all("/mcp", async (req, res) => {
   const apiKey = resolveKey(req);
   if (!apiKey) {
     res.status(401).json({
-      error: "API key ausente. Envie Authorization: Bearer <key> ou configure REDMINE_API_KEY",
+      error:
+        "API key ausente. Authorization: Bearer <key> ou REDMINE_API_KEY no ambiente",
     });
     return;
   }
@@ -63,7 +69,7 @@ app.all("/mcp", async (req, res) => {
     const client = createClient({ baseUrl, apiKey, readOnly });
     const server = new McpServer({
       name: "conector-redmine",
-      version: "1.0.0",
+      version: "1.1.0",
     });
     registerTools(server, client);
 
@@ -72,13 +78,17 @@ app.all("/mcp", async (req, res) => {
     });
 
     res.on("close", () => {
-      transport.close?.();
+      try {
+        transport.close?.();
+      } catch {
+        /* ignore */
+      }
     });
 
     await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
   } catch (err) {
-    console.error(err);
+    console.error("[conector-redmine]", err);
     if (!res.headersSent) {
       res.status(500).json({ error: String(err.message || err) });
     }
@@ -86,7 +96,6 @@ app.all("/mcp", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.error(`ConectorREDMINE HTTP em http://0.0.0.0:${PORT}/mcp`);
-  console.error(`Health: http://0.0.0.0:${PORT}/health`);
-  console.error(`Redmine: ${baseUrl}`);
+  console.error(`[conector-redmine] HTTP :${PORT}/mcp  health :${PORT}/health`);
+  console.error(`[conector-redmine] Redmine ${baseUrl}`);
 });
