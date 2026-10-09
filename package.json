@@ -1,0 +1,31 @@
+{
+  "name": "conector-redmine",
+  "version": "1.0.0",
+  "description": "MCP server público para Redmine — Grok custom connector, Claude, Cursor",
+  "type": "module",
+  "bin": {
+    "conector-redmine": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "http": "node src/http-server.js",
+    "stdio": "node src/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "redmine",
+    "grok",
+    "claude",
+    "xai",
+    "connector"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "express": "^4.21.0",
+    "zod": "^3.23.0"
+  }
+}
